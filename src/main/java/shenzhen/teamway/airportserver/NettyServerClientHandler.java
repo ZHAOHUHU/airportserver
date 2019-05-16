@@ -1,8 +1,6 @@
 package shenzhen.teamway.airportserver;
 
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import shenzhen.teamway.model.Device;
@@ -42,8 +40,12 @@ public class NettyServerClientHandler extends SimpleChannelInboundHandler<wenshi
     protected void messageReceived(ChannelHandlerContext ctx, wenshiduDevice m) throws Exception {
         log.info(m.toString());
         updateDeviceState(m);
-
     }
+
+    //@Override
+    //public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+    //    super.close(ctx, promise);
+    //}
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -54,6 +56,7 @@ public class NettyServerClientHandler extends SimpleChannelInboundHandler<wenshi
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("连接捕捉到异常：" + cause.toString());
+        cause.printStackTrace();
 
     }
 
@@ -61,7 +64,7 @@ public class NettyServerClientHandler extends SimpleChannelInboundHandler<wenshi
         this.map = map;
     }
 
-    private void updateDeviceState(wenshiduDevice m) {
+    private synchronized void updateDeviceState(wenshiduDevice m) {
         if (map.containsKey(m.getIp())) {
             final Device device = map.get(m.getIp());
             if (System.currentTimeMillis() - device.getTime() < time) {
@@ -82,17 +85,19 @@ public class NettyServerClientHandler extends SimpleChannelInboundHandler<wenshi
                 device.setShidu(m.getShidu());
                 device.setWendu(m.getWendu());
                 device.setTime(System.currentTimeMillis());
-                //设备超过了三分钟
-                device.setOnline(false);
+                //设备超过了三分钟强制更新所有
+                device.setOnline(true);
             }
         } else {
-            final Device d = new Device();
-            d.setWendu(m.getWendu());
-            d.setShidu(m.getShidu());
-            d.setIp(m.getIp());
-            d.setTime(System.currentTimeMillis());
-            d.setOnline(true);
-            map.put(m.getIp(), d);
+            //final Device d = new Device();
+            //d.setWendu(m.getWendu());
+            //d.setShidu(m.getShidu());
+            //d.setIp(m.getIp());
+            //d.setTime(System.currentTimeMillis());
+            //d.setOnline(true);
+            //d.setUpdate(true);
+            //map.put(m.getIp(), d);
+            log.error("主动上报的设备列表里没有IP为:" + m.getIp() + "的设备");
         }
     }
 }

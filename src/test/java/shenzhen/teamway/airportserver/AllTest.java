@@ -5,12 +5,28 @@ import shenzhen.teamway.model.Device;
 import shenzhen.teamway.otherperson.AirPort;
 import shenzhen.teamway.utils.OtherUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
 public class AllTest {
 
+@Test
+public void testSleep(){
+    System.out.println("开始");
+    System.out.println("结束");
+}
+@Test
+public void testList(){
+    List<Long> list = new ArrayList<>(1);
+    list.add(System.currentTimeMillis());
+    list.add(System.currentTimeMillis());
+    list.add(System.currentTimeMillis());
+    System.out.println(list.size());
+}
     @Test
     public void getAllDeviceValueTest() {
         ConcurrentHashMap<String, Device> map = new ConcurrentHashMap<>();

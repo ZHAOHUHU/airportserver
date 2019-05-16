@@ -27,7 +27,7 @@ public class NettyServer {
         return nettyServer;
     }
 
-    private boolean bind(int port) throws InterruptedException {
+    private boolean bind(int port) {
 
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup worker = new NioEventLoopGroup();
@@ -46,13 +46,21 @@ public class NettyServer {
                 socketChannel.pipeline().addLast();
                 ChannelPipeline p = socketChannel.pipeline();
                 p.addLast(new MessageDecode());
-                p.addLast( NettyServerClientHandler.getInstance());
+                p.addLast(NettyServerClientHandler.getInstance());
             }
         });
-        ChannelFuture f = bootstrap.bind(port).sync();
-        if (f.isSuccess()) {
-            log.info("服务启动，侦听端口: " + port);
+        ChannelFuture f = null;
+        try {
+            f = bootstrap.bind(port).sync();
+            if (f.isSuccess()) {
+                log.info("服务启动，侦听端口: " + port);
+            }
+        } catch (Exception e) {
+            log.error(e.toString());
+            worker.shutdownGracefully();
+            boss.shutdownGracefully();
         }
+
         return true;
     }
 
@@ -61,18 +69,8 @@ public class NettyServer {
     }
 
     public void startServer() {
-        try {
-            bind(serverPort);
-        } catch (InterruptedException e) {
-            log.error("启动网网络服务错误，程序退出。");
-            return;
-        }
+        bind(serverPort);
     }
 
-    public static void main(String[] args) {
-        final AirPort port = new AirPort();
-     port.setListenPort(8888);
-     port.startRun();
-    }
 
 }
